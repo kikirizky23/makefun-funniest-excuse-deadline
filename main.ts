@@ -31,18 +31,28 @@ const MAX_LINE_LENGTH = 200;
 const OUTPUT_NAME = 'entry.txt';
 
 /**
+ * How long the excuse is, in characters. JavaScript's .length
+ * counts UTF-16 code units, which over-counts any character outside
+ * the basic multilingual plane (an emoji counts as two); the bounty
+ * counts characters, so spread the string into code points instead.
+ */
+function excuseLength(): number {
+  return [...EXCUSE].length;
+}
+
+/**
  * Refuse to write anything that is not exactly one line of text.
  * A newline inside the excuse would split it into two lines, and a
  * line over the limit would not be the entry the bounty asked for.
  */
 function excuseIsValid(): boolean {
-  if (EXCUSE.length === 0) {
+  if (excuseLength() === 0) {
     process.stderr.write('[entry] the excuse is empty\n');
     return false;
   }
-  if (EXCUSE.length > MAX_LINE_LENGTH) {
+  if (excuseLength() > MAX_LINE_LENGTH) {
     process.stderr.write(
-      `[entry] the excuse is ${EXCUSE.length} characters, over the ${MAX_LINE_LENGTH} limit\n`,
+      `[entry] the excuse is ${excuseLength()} characters, over the ${MAX_LINE_LENGTH} limit\n`,
     );
     return false;
   }
@@ -90,7 +100,7 @@ function confirmWritten(target: string): boolean {
     return false;
   }
   const digest = createHash('sha256').update(written, 'utf-8').digest('hex');
-  process.stdout.write(`[entry] wrote ${target} (${EXCUSE.length} characters, sha256 ${digest})\n`);
+  process.stdout.write(`[entry] wrote ${target} (${excuseLength()} characters, sha256 ${digest})\n`);
   return true;
 }
 
